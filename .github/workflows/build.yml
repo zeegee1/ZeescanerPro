@@ -1,0 +1,32 @@
+name: Build ZeescanerPro
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract project
+        run: |
+          unzip -q *.zip -d project
+          find project -name gradlew -type f -exec chmod +x {} \;
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build APK
+        run: |
+          GRADLEW=$(find project -name gradlew -type f | head -1)
+          cd "$(dirname "$GRADLEW")"
+          ./gradlew assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ZeescanerPro-APK
+          path: project/**/build/outputs/apk/**/*.apk
