@@ -13,8 +13,9 @@ jobs:
 
       - name: Extract Android project
         run: |
+          mkdir -p project
           unzip -o ZeeScanerPro-Android-Project.zip -d project
-          find project -name gradlew -type f
+          find project -maxdepth 3 -type f
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -22,10 +23,13 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Install Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Build APK
         run: |
-          PROJECT_DIR=$(dirname "$(find project -name gradlew -type f | head -1)")
-          cd "$PROJECT_DIR"
+          cd project/project
+          gradle wrapper
           chmod +x gradlew
           ./gradlew assembleDebug
 
@@ -33,4 +37,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ZeescanerPro-APK
-          path: 'project/**/build/outputs/apk/**/*.apk'
+          path: 'project/project/app/build/outputs/apk/**/*.apk'
