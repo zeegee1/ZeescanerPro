@@ -1,39 +1,30 @@
-name: Build ZeescanerPro
+name: ZeescanerPro
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout project
+        uses: actions/checkout@v4
 
-      - name: Extract project
-        run: |
-          mkdir -p project
-          unzip -q ./*.zip -d project
-          GRADLEW=$(find project -name gradlew -type f | head -1)
-          if [ -z "$GRADLEW" ]; then
-            echo "ERROR: gradlew was not found in the ZIP"
-            find project -maxdepth 3 -type f | head -100
-            exit 1
-          fi
-          chmod +x "$GRADLEW"
-
-      - uses: actions/setup-java@v5
+      - name: Set up Java
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Build APK
-        run: |
-          GRADLEW=$(find project -name gradlew -type f | head -1)
-          cd "$(dirname "$GRADLEW")"
-          "$GRADLEW" assembleDebug
+      - name: Make Gradle executable
+        run: chmod +x gradlew
 
-      - uses: actions/upload-artifact@v4
+      - name: Build APK
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: ZeescanerPro-APK
-          path: project/**/build/outputs/apk/**/*.apk
+          path: '**/build/outputs/apk/**/*.apk'
